@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MonApp - Gestion des soldes de congés</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/navigationadmin.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <%- include('../navbaradmin') %>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="row page-header">
+                <div class="col-md-6">
+                    <h2>Gestion des soldes de congés</h2>
+                    <p class="text-muted">Consultez et modifiez les soldes de congés des employés</p>
+                </div>
+                <div class="col-md-6 d-flex justify-content-end align-items-center">
+                    <div class="notification-icon">
+                        <i class="fas fa-bell fa-lg"></i>
+                        <span class="notification-badge"><%= demandes_en_attente %></span>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar">AR</div>
+                        <div>
+                            <div class="user-name">Admin RH</div>
+                            <div class="user-role">Responsable RH</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row filters">
+                <div class="col-md-4">
+                    <div class="search-container">
+                        <i class="fas fa-search text-muted"></i>
+                        <input type="text" id="rechercheUtilisateur" placeholder="Rechercher un employé...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Employés (<%= utilisateurs.length %>)</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Employé</th>
+                                    <th>Email</th>
+                                    <th>Solde actuel</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (utilisateurs.length === 0) { %>
+                                    <tr>
+                                        <td colspan="4" class="text-center">Aucun utilisateur trouvé</td>
+                                    </tr>
+                                <% } else { %>
+                                    <% utilisateurs.forEach(user => {
+                                        // Initiales de l'utilisateur
+                                        const nomSplit = user.nom.split(' ');
+                                        let initials = '';
+                                        if (nomSplit.length >= 2) {
+                                            initials = nomSplit[0].charAt(0) + nomSplit[1].charAt(0);
+                                        } else {
+                                            initials = nomSplit[0].substring(0, 2);
+                                        }
+                                    %>
+                                    <tr class="user-item" data-id="<%= user.id %>">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div style="width: 30px; height: 30px; background-color: #4e73df; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 10px;"><%= initials %></div>
+                                                <div><%= user.nom %></div>
+                                            </div>
+                                        </td>
+                                        <td><%= user.email %></td>
+                                        <td><span class="badge bg-success rounded-pill px-3 py-2"><%= (parseFloat(user.solde_conges) % 1 === 0 ? parseFloat(user.solde_conges).toFixed(0) : parseFloat(user.solde_conges).toFixed(1)) %> jours</span></td>
+                                        <td class="action-buttons">
+                                            <button class="btn btn-sm btn-warning btn-edit-solde" data-id="<%= user.id %>" data-solde="<%= user.solde_conges %>" data-nom="<%= user.nom %>">
+                                                <i class="fas fa-edit"></i> Modifier
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <% if (pagination.totalPages > 1) { %>
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li class="page-item <%= pagination.currentPage === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="/admin/gestionsolde?page=<%= pagination.currentPage - 1 %>" tabindex="-1" <%= pagination.currentPage === 1 ? 'aria-disabled="true"' : '' %>>Précédent</a>
+                    </li>
+                    <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                        <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+                            <a class="page-link" href="/admin/gestionsolde?page=<%= i %>"><%= i %></a>
+                        </li>
+                    <% } %>
+                    <li class="page-item <%= pagination.currentPage === pagination.totalPages ? 'disabled' : '' %>">
+                        <a class="page-link" href="/admin/gestionsolde?page=<%= pagination.currentPage + 1 %>">Suivant</a>
+                    </li>
+                </ul>
+            </nav>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Modal pour modifier le solde de congés -->
+    <div class="modal fade" id="editSoldeModal" tabindex="-1" aria-labelledby="editSoldeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editSoldeModalLabel">Modifier le solde de congés</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editSoldeForm">
+                        <input type="hidden" id="userId" name="userId">
+                        <div class="mb-3">
+                            <label class="form-label">Employé</label>
+                            <input type="text" class="form-control" id="userName" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="currentSolde" class="form-label">Solde actuel</label>
+                            <input type="text" class="form-control" id="currentSolde" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newSolde" class="form-label">Nouveau solde</label>
+                            <input type="number" class="form-control" id="newSolde" name="newSolde" min="0" max="30" step="0.5" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveSolde">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/feedback.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion des modales avec Bootstrap
+            const editSoldeModal = new bootstrap.Modal(document.getElementById('editSoldeModal'));
+
+            // Boutons pour modifier le solde
+            document.querySelectorAll('.btn-edit-solde').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    const solde = this.getAttribute('data-solde');
+                    const nom = this.getAttribute('data-nom');
+
+                    document.getElementById('userId').value = userId;
+                    document.getElementById('userName').value = nom;
+                    document.getElementById('currentSolde').value = solde;
+                    document.getElementById('newSolde').value = solde;
+
+                    editSoldeModal.show();
+                });
+            });
+
+            // Bouton pour enregistrer le nouveau solde
+            document.getElementById('btnSaveSolde').addEventListener('click', function() {
+                const userId = document.getElementById('userId').value;
+                const newSolde = document.getElementById('newSolde').value;
+
+                fetch('/navigationadmin/modifyLeaveBalance', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        newLeaveBalance: newSolde
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        // Afficher le modal de feedback
+                        const feedbackModal = showFeedbackModal({
+                            type: 'success',
+                            title: 'Succès',
+                            message: data.message
+                        });
+
+                        // Fermer le modal d'édition
+                        editSoldeModal.hide();
+
+                        // Écouteur d'événement pour la fermeture du modal de feedback
+                        document.getElementById('feedbackModal').addEventListener('hidden.bs.modal', function () {
+                            // Recharger la page après la fermeture du modal
+                            window.location.reload();
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showFeedbackModal({
+                        type: 'error',
+                        title: 'Erreur',
+                        message: 'Une erreur est survenue lors de la mise à jour du solde.'
+                    });
+                });
+            });
+
+            // Filtre de recherche
+            document.getElementById('rechercheUtilisateur').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('.user-item');
+
+                rows.forEach(row => {
+                    const nom = row.querySelector('td:first-child').textContent.toLowerCase();
+                    const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+
+                    if (nom.includes(searchTerm) || email.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+    <script src="/js/animationnav.js"></script>
+    <script src="/js/baractivation.js"></script>
+</body>
+</html>

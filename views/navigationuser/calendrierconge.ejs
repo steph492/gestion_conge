@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendrier des congés</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/navigationuser.css">
+  <link rel="stylesheet" href="/css/user.css">
+  <style>
+    .calendar-container {
+      background: var(--white);
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(78, 115, 223, 0.08);
+      padding: 30px;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .calendar-controls {
+      display: flex;
+      align-items: center;
+    }
+
+    .calendar-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+    }
+
+    .calendar-table th,
+    .calendar-table td {
+      width: 14.2%;
+      padding: 12px 0;
+      border: 1px solid var(--light-gray);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .calendar-table th {
+      background: var(--light-blue);
+      color: var(--primary-blue);
+      font-weight: 600;
+    }
+
+    .calendar-table td:hover {
+      background: var(--light-blue);
+    }
+
+    .calendar-table .today {
+      background: var(--secondary-blue);
+      color: var(--white);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: inline-block;
+      top: 17px;
+      transform: translate(-4%, -25%);
+      z-index: 1;font-size: 1em;
+    }
+
+    .leave-bar {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      height: 6px;
+      width: 100%;
+      transform: translateY(-50%);
+      z-index: 0;
+    }
+
+    .legend {
+      margin-top: 20px;
+      display: flex;
+      gap: 30px;
+      font-size: 0.95em;
+    }
+
+    .legend span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend .today-dot {
+      width: 16px;
+      height: 16px;
+      background: var(--secondary-blue);
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+            /* Ajout de styles pour les statuts */
+            .statut-approuve {
+            background-color: #61f383;
+            /* Vert clair */
+            border-radius: 5px;
+            /* Ajout de bordures arrondies */
+            width: 80%;
+            /* Réduction de la largeur */
+            margin: 0 auto;
+            /* Centrer le marqueur */
+            padding: 2px;
+            /* Ajout d'un petit padding */
+            color: #fff;
+            /* Assurer la lisibilité du texte */
+            font-size: 1.4em;
+            /* Réduire la taille de la police pour un meilleur ajustement */
+        }
+
+        .statut-en-attente {
+            background-color: #ffc107;
+            /* Jaune/Orange */
+            border-radius: 5px;
+            width: 80%;
+            margin: 0 auto;
+            padding: 2px;
+            color: #000;
+            font-size: 1.4em;
+        }
+
+        .statut-refuse {
+            background-color: #f08078;
+            /* Rouge */
+            border-radius: 5px;
+            width: 80%;
+            margin: 0 auto;
+            padding: 2px;
+            color: #fff;
+            font-size: 1.4em;
+        }
+
+
+    @media (max-width: 900px) {
+      .sidebar {
+        width: 60px;
+      }
+
+      .sidebar .nav-link {
+        padding: 15px 10px;
+        font-size: 1em;
+      }
+
+      .main-content {
+        margin-left: 60px;
+        padding: 20px 5px 5px 5px;
+      }
+    }
+
+    .leave-range {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      height: 20px;
+      background-color: rgba(249, 200, 70, 0.5);
+      transform: translateY(-50%);
+      z-index: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <%- include('../navbar') %>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="calendar-container">
+      <div class="calendar-header">
+        <h2 style="color: var(--primary-blue);">Calendrier des congés</h2>
+        <div class="calendar-controls">
+          <select class="form-select me-2" id="monthSelect">
+            <option value="0">Janvier</option>
+            <option value="1">Février</option>
+            <option value="2">Mars</option>
+            <option value="3">Avril</option>
+            <option value="4">Mai</option>
+            <option value="5">Juin</option>
+            <option value="6">Juillet</option>
+            <option value="7">Août</option>
+            <option value="8">Septembre</option>
+            <option value="9">Octobre</option>
+            <option value="10">Novembre</option>
+            <option value="11">Décembre</option>
+          </select>
+        </div>
+        <div>
+            <button class="btn btn-outline-primary me-2" id="prevMonth"><i
+                    class="fas fa-chevron-left"></i></button>
+            <span id="monthYear" style="font-weight: 600; color: var(--primary-blue);"></span>
+            <button class="btn btn-outline-primary ms-2" id="nextMonth"><i
+                    class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+      <table class="calendar-table">
+        <thead>
+          <tr>
+            <th>Lun</th>
+            <th>Mar</th>
+            <th>Mer</th>
+            <th>Jeu</th>
+            <th>Ven</th>
+            <th>Sam</th>
+            <th>Dim</th>
+          </tr>
+        </thead>
+        <tbody id="calendarBody">
+          <!-- Les jours du calendrier seront générés ici -->
+        </tbody>
+      </table>
+      <div class="legend">
+        <span><span class="today-dot"></span> Aujourd'hui</span>
+        <span><span
+            style="background-color: #61f383; width: 16px; height: 16px; border-radius: 50%; display: inline-block;"></span>
+          Approuvée</span>
+        <span><span
+            style="background-color: #ffc107; width: 16px; height: 16px; border-radius: 50%; display: inline-block;"></span>
+          En attente</span>
+        <span><span
+            style="background-color:  #f08078; width: 16px; height: 16px; border-radius: 50%; display: inline-block;"></span>
+          Refusée</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const today = new Date();
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+
+    const leaveData = <%- JSON.stringify(conges) %>;
+
+    function generateCalendar(month, year, leaveData) {
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDayOfWeek = (firstDay.getDay() + 6) % 7;
+
+      let html = '';
+      let date = 1 - startDayOfWeek;
+
+      for (let i = 0; i < 6; i++) {
+        html += '<tr>';
+        for (let j = 0; j < 7; j++) {
+          let dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+          let cellContent = date;
+          let cellClass = '';
+          let statutClass = '';
+          let isLeaveDay = false;
+
+          if (date >= 1 && date <= lastDay.getDate()) {
+            leaveData.forEach(leave => {
+              let startDate = new Date(leave.date_debut);
+              let endDate = new Date(leave.date_fin);
+              let currentDate = new Date(year, month, date);
+
+              if (currentDate >= startDate && currentDate <= endDate) {
+                isLeaveDay = true;
+                switch (leave.statut) {
+                  case 'approuvé':
+                    statutClass = 'statut-approuve';
+                    break;
+                  case 'en attente':
+                    statutClass = 'statut-en-attente';
+                    break;
+                  case 'refusé':
+                    statutClass = 'statut-refuse';
+                    break;
+                }
+              }
+            });
+
+            if (isLeaveDay) {
+              cellClass = statutClass;
+            }
+            if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+              cellContent = `<span class="today">${date}</span>`;
+              cellClass += ' today';
+            }
+
+            html += `<td class="${cellClass}" data-date="${dateStr}">${cellContent}</td>`;
+          } else {
+            html += '<td></td>';
+          }
+
+          date++;
+        }
+        html += '</tr>';
+        if (date > lastDay.getDate()) break;
+      }
+      document.getElementById('calendarBody').innerHTML = html;
+      document.getElementById('monthYear').textContent = new Date(year, month).toLocaleString('fr-FR', {
+        month: 'long',
+        year: 'numeric'
+      }).replace(/^\w/, c => c.toUpperCase());
+    }
+
+    function updateCalendar(month, year, leaveData) {
+      generateCalendar(month, year, leaveData);
+      document.getElementById('monthSelect').value = month;
+    }
+    document.getElementById('monthSelect').value = currentMonth;
+
+    document.getElementById('prevMonth').onclick = function () {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      updateCalendar(currentMonth, currentYear, leaveData);
+    };
+
+    document.getElementById('nextMonth').onclick = function () {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      updateCalendar(currentMonth, currentYear, leaveData);
+    };
+    document.getElementById('monthSelect').onchange = function () {
+      currentMonth = parseInt(this.value);
+      updateCalendar(currentMonth, currentYear, leaveData);
+    };
+
+    // Initialisation
+    updateCalendar(currentMonth, currentYear, leaveData);
+  </script>
+<script src="/js/animationnav.js"></script>
+<script src="/js/baractivation.js"></script>
+</body>
+</html>

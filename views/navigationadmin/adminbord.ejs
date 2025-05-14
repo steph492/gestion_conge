@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord RH - Gestion des Congés</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/navigationuser.css">
+    <link rel="stylesheet" href="/css/navigationadmin.css">
+</head>
+<body>
+     <!-- Inclure la barre de navigation -->
+  <%- include('../navbaradmin') %>
+    <!-- Contenu principal -->
+    <div class="main-content">
+        <div class="dashboard-header">
+            <div class="dashboard-title">
+                <h1>Tableau de bord RH</h1>
+                <p>Gestion des congés et des permissions</p>
+            </div>
+            <div class="admin-actions">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <span>AR</span>
+                    </div>
+                    <div class="user-details">
+                        <h4>Admin RH</h4>
+                        <p>Responsable RH</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+       <!-- Cartes d'information -->
+<div class="dashboard-cards">
+    <div class="card">
+        <div class="card-icon blue-bg">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="card-content">
+            <h3>Demandes en attente</h3>
+            <!-- Utilisation de la variable EJS pour afficher le nombre -->
+            <p><%= demandes_en_attente %></p>
+            <span class="subtitle">Nécessitant votre action</span>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-icon green-bg">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="card-content">
+            <h3>Employés actifs</h3>
+            <!-- Utilisation de la variable EJS pour afficher le nombre -->
+            <p><%= employes_actifs %></p>
+            <span class="subtitle">Sur 52 employés au total</span>
+        </div>
+        <div class="card-progress">
+            <div class="progress-bar" style="width: 92%"></div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-icon orange-bg">
+            <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="card-content">
+            <h3>Absences aujourd'hui</h3>
+            <!-- Utilisation de la variable EJS pour afficher le nombre -->
+            <p><%= absences_aujourdhui %></p>
+            <span class="subtitle">Employés absents</span>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-icon red-bg">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="card-content">
+            <h3>Congés critiques</h3>
+            <!-- Utilisation de la variable EJS pour afficher le nombre -->
+            <p><%= conges_critiques %></p>
+            <span class="subtitle">Chevauchements équipe</span>
+        </div>
+    </div>
+    <!-- Nouvelle carte pour le solde de congés -->
+    <div class="card">
+        <div class="card-icon purple-bg">
+            <i class="fas fa-umbrella-beach"></i>
+        </div>
+        <div class="card-content">
+            <h3>Solde de congés</h3>
+            <!-- Utilisation de la variable EJS pour afficher le nombre -->
+            <p><%= solde_conges_total %></p>
+            <span class="subtitle">Jours disponibles total</span>
+        </div>
+    </div>
+</div>
+
+
+
+
+        
+
+        <!-- Calendrier des absences -->
+        <div class="calendar-section">
+            <div class="section-header">
+                <h2>Calendrier des absences</h2>
+                <div class="calendar-filters">
+                    <button class="calendar-filter active">Jour</button>
+                    <button class="calendar-filter">Semaine</button>
+                    <button class="calendar-filter">Mois</button>
+                    <button class="calendar-filter">Service</button>
+                </div>
+            </div>
+            <div class="calendar">
+                <!-- Ici, vous pourrez intégrer un calendrier avec JavaScript (FullCalendar par exemple) -->
+                <div class="calendar-placeholder">
+                    <i class="fas fa-calendar-alt"></i>
+                    <p>Vue globale des absences de tous les employés</p>
+                </div>
+            </div>
+        </div>
+
+    <script>
+        // Toggle sidebar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Filtres du calendrier
+            const calendarFilters = document.querySelectorAll('.calendar-filter');
+            calendarFilters.forEach(filter => {
+                filter.addEventListener('click', function() {
+                    calendarFilters.forEach(f => f.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+<script src="/js/animationnav.js"></script>
+<script src="/js/baractivation.js"></script>
+</body>
+</html>

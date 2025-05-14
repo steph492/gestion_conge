@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord RH - Gestion des Congés</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" href="/css/navigationuser.css">
+    <link rel="stylesheet" href="/css/navigationadmin.css">
+</head>
+<body>
+     <!-- Inclure la barre de navigation -->
+  <%- include('../navbaradmin') %>
+    <!-- Contenu principal -->
+    <div class="main-content">
+        <div class="stats-row">
+            <div class="stats-column">
+                <div class="stats-card">
+                    <div class="section-header">
+                        <h2>Répartition des congés</h2>
+                    </div>
+                    <div class="chart-container" style="height:320px;">
+                        <canvas id="camembertChart"></canvas>
+                    </div>
+                    <div class="chart-legend">
+                        <% for(let type in repartition_conges) { %>
+                            <div class="legend-item">
+                                <span class="legend-color"></span>
+                                <p><%= type %> (<%= repartition_conges[type].percent %>%)</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-column">
+                <div class="stats-card">
+                    <div class="section-header">
+                        <h2>Congés par mois (Histogramme)</h2>
+                    </div>
+                    <div class="chart-container" style="height:320px;">
+                        <canvas id="histogramChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            // Camembert
+            const camembertCtx = document.getElementById('camembertChart').getContext('2d');
+            new Chart(camembertCtx, {
+                type: 'pie',
+                data: {
+                    labels: <%- JSON.stringify(camembertLabels) %>,
+                    datasets: [{
+                        data: <%- JSON.stringify(camembertData) %>,
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: false }
+                    }
+                }
+            });
+        
+            // Histogramme
+            const histogramCtx = document.getElementById('histogramChart').getContext('2d');
+            new Chart(histogramCtx, {
+                type: 'bar',
+                data: {
+                    labels: <%- JSON.stringify(histogramLabels) %>,
+                    datasets: [{
+                        label: 'Nombre de congés',
+                        data: <%- JSON.stringify(histogramData) %>,
+                        backgroundColor: 'rgba(78, 115, 223, 0.7)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        </script>        
+<script src="/js/animationnav.js"></script>
+<script src="/js/baractivation.js"></script>
+    </div>
+</body>
+</html>

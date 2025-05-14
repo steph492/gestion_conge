@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Gestion des Congés</title>
+    
+    <!-- Google Fonts : Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Boxicons pour les icônes -->
+    <link href="https://cdn.jsdelivr.net/npm/boxicons/css/boxicons.min.css" rel="stylesheet">
+
+    <!-- CSS personnalisé -->
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-box login">
+            <form id="loginForm">
+                <h1>Connexion</h1>
+                <div class="input-box">
+                    <select name="role" required>
+                        <option value="" disabled selected>Authentifiez-vous en tant que :</option>
+                        <option value="admin">Admin</option>
+                        <option value="manager">Manager</option>
+                        <option value="employé">Employé</option>
+                    </select>
+                    <i class="bx bxs-chevron-down"></i>
+                </div>
+                
+                <div class="input-box">
+                    <input type="text" name="email" placeholder="Email" required>
+                    <i class="bx bxs-user"></i>
+                </div>
+                <div class="input-box">
+                    <input type="password" name="mot_de_passe" placeholder="Mot de passe" required>
+                    <i class="bx bxs-lock-alt"></i>
+                </div>
+
+                
+
+                <div class="forgot-link">
+                    <a href="#">Mot de passe oublié ?</a>
+                </div>
+
+                <button type="submit" class="btn">Se connecter</button>
+                <p>ou connectez-vous avec des plateformes sociales</p>
+                <div class="social-icons">
+                    <a href="#" class="bx bxl-google"></a>
+                    <a href="#" class="bx bxl-facebook"></a>
+                    <a href="#" class="bx bxl-github"></a>
+                    <a href="#" class="bx bxl-linkedin"></a>
+                </div>
+            </form>
+        </div>
+
+        <div class="toggle-box">
+            <div class="toggle-panel toggle-left">
+                <i class='bx bxs-user-circle icon-large'></i> <!-- Ajoutez cette ligne -->
+                <h1>Connectez-vous!</h1>
+                <p>Gérer vos absences</p>
+                <div class="feedback-box">
+                    <div class="loading-spinner" id="loadingSpinner"></div>
+                    <div class="message" id="messageBox">
+                        <i class='bx bx-check-circle' id="successIcon" style="display: none; margin-right: 8px;"></i>
+                        <span id="messageText"></span>
+                    </div>
+                </div>
+            </div>                        
+        </div>
+    </div>
+
+    <!-- Animation JS -->
+    <script src="js/animation.js"></script>
+
+    <!-- Script pour gérer la connexion -->
+    <script>
+const loadingSpinner = document.getElementById('loadingSpinner');
+const messageBox = document.getElementById('messageBox');
+const messageText = document.getElementById('messageText');
+const successIcon = document.getElementById('successIcon');
+
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const email = document.querySelector('input[name="email"]').value;
+    const mot_de_passe = document.querySelector('input[name="mot_de_passe"]').value;
+    const role = document.querySelector('select[name="role"]').value;
+
+    // Reset affichage
+    loadingSpinner.style.display = 'block';
+    messageBox.style.display = 'none';
+    messageBox.className = 'message';
+    successIcon.style.display = 'none';
+
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `email=${encodeURIComponent(email)}&mot_de_passe=${encodeURIComponent(mot_de_passe)}&role=${encodeURIComponent(role)}`
+        });
+
+        const result = await response.text();
+
+        setTimeout(() => {
+            loadingSpinner.style.display = 'none';
+            messageText.textContent = result;
+
+            if (result === 'Connexion réussie') {
+                messageBox.classList.add('success');
+                successIcon.style.display = 'inline-block';
+                messageBox.style.display = 'flex';
+                setTimeout(() => {
+                    if (role === 'admin' || role === 'manager') {
+                        window.location.href = '/admin';
+                    } else {
+                        window.location.href = '/user';
+                    }
+                }, 1500);
+            } else {
+                messageBox.classList.add('error');
+                messageBox.style.display = 'flex';
+            }
+        }, 1000);
+    } catch (err) {
+        loadingSpinner.style.display = 'none';
+        messageText.textContent = "Erreur lors de la tentative de connexion.";
+        messageBox.classList.add('error');
+        messageBox.style.display = 'flex';
+        console.error(err);
+    }
+});
+    </script>
+</body>
+</html>

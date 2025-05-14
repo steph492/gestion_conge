@@ -1,0 +1,344 @@
+:root {
+    --primary-blue: #4e73df;
+    --secondary-blue: #6285f5;
+    --light-blue: #ebeeff;
+    --white: #ffffff;
+    --light-gray: #f8f9fc;
+}
+
+body {
+    background-color: var(--light-blue);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.search-container {
+    background: var(--white);
+    border-radius: 25px;
+    padding: 5px 15px;
+    display: flex;
+    align-items: center;
+    max-width: 400px;
+}
+
+.search-container input {
+    border: none;
+    outline: none;
+    padding: 8px;
+    width: 100%;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    background: var(--white);
+    border-radius: 10px;
+    padding: 10px 20px;
+}
+
+.user-avatar {
+    background-color: var(--primary-blue);
+    color: var(--white);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.user-role {
+    font-size: 14px;
+    color: #777;
+}
+
+.notification-icon {
+    position: relative;
+    margin-right: 20px;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff4d4d;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  border: none;padding: 20px;margin-left: 10px;
+  width: 98%;
+}
+
+.card-header {
+    background-color: var(--white);
+    border-bottom: 1px solid #eee;
+    padding: 15px 20px;
+    font-weight: bold;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.demand-item {
+    border-left: 5px solid transparent;
+    transition: all 0.3s;
+}
+
+.demand-item:hover {
+    background-color: var(--light-gray);
+    cursor: pointer;
+}
+
+.demand-item.pending {
+    border-left-color: #ffc107;
+}
+
+.demand-item.approved {
+    border-left-color: #28a745;
+}
+
+.demand-item.rejected {
+    border-left-color: #dc3545;
+}
+
+.badge-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.badge-approved {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.badge-rejected {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.btn-action {
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+.pagination {
+    justify-content: center;
+}
+
+.action-buttons .btn {
+    padding: 3px 10px;
+    font-size: 0.8rem;
+}
+
+.filters {
+    margin-bottom: 20px;
+}
+
+
+/* Statistique des employés et des congés */
+.stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 20px 0;
+  }
+  
+  .stats-column {
+    flex: 1;
+    min-width: 300px;
+    margin: 10px;
+  }
+  
+  .stats-card {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .section-header h2 {
+    font-size: 1.3rem;
+    color: var(--primary-blue);
+  }
+  
+  .filter-options select {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #495057;
+  }
+  
+  .chart-container {
+    height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #6c757d;
+    font-size: 1rem;
+    border: 1px dashed #ced4da;
+    border-radius: 6px;
+    background-color: var(--light-gray);
+    margin-bottom: 15px;
+  }
+  
+  .chart-placeholder {
+    text-align: center;
+  }
+  
+  .chart-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    color: #adb5bd;
+  }
+  
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 10px;
+  }
+  
+  .legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+  
+  /* Congés Section */
+  .conges-section {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    margin-top: 20px;
+  }
+  
+  .conges-section h2 {
+    font-size: 1.3rem;
+    color: var(--primary-blue);
+    margin-bottom: 15px;
+  }
+  
+  .conges-section table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .conges-section th,
+  .conges-section td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  .conges-section th {
+    background-color: var(--light-blue);
+    color: var(--primary-blue);
+    font-weight: 500;
+  }
+  
+  .conges-section tbody tr:hover {
+    background-color: var(--light-gray);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .stats-column {
+      flex: 100%;
+    }
+  }
+  
+
+
+
+
+
+
+
+
+
+/* Styles pour le modal de feedback */
+#feedbackModal .modal-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+#feedbackModal .modal-icon {
+  font-size: 1.5rem;
+  margin-right: 0.75rem;
+}
+
+#feedbackModal .modal-body {
+  padding: 1.5rem;
+}
+
+#feedbackModal .modal-footer {
+  padding: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+/* Styles pour les icônes */
+.text-success {
+  color: #5ae97b !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+.text-info {
+  color: #17a2b8 !important;
+}
+
+/* Styles pour les couleurs de fond avec opacité */
+.bg-success {
+  background-color: #28a745 !important;
+}
+
+.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+.bg-warning {
+  background-color: #ffc107 !important;
+}
+
+.bg-info {
+  background-color: #17a2b8 !important;
+}
+
+
+
+
+  

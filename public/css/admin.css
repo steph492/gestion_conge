@@ -1,0 +1,186 @@
+/* user.css */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background: #7494ec;
+  color: #fff;
+  transition: width 0.3s;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Aligner les éléments au début pour éviter le déplacement */
+
+}
+
+.sidebar.active {
+  width: 80px; /* Réduit la largeur de la sidebar */
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 17px;
+  margin-bottom: 20px;border-bottom: 2px solid #fff;background-color: #4e73df;
+}
+
+.logo h2 {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  font-size: 24px;margin-left: 5px;
+}
+
+.logo .app-name {
+  margin-left: 10px;
+  transition: opacity 0.3s;
+}
+
+.logo .app-name.hidden {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* Navigation Links */
+.nav-links {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+
+.nav-links li {
+  padding: 15px 20px;
+  width: 100%;
+  display: flex;
+  align-items: center; /* Garder les éléments alignés */
+}
+
+.nav-links li a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #fff;
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+.nav-links li:hover a{
+  color: #4e73df;
+}
+.nav-links li:hover {
+  background-color: #fff ;border-radius: 4px;
+}
+
+.nav-links li a i {
+  font-size: 20px;
+  width: 30px;
+}
+
+.nav-links li a span {
+  margin-left: 10px;
+  transition: opacity 0.3s ease, display 0.3s ease;
+}
+
+.nav-links li.active-li {
+  background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 1px;
+}
+
+
+.nav-links li.active-li a {
+  color: #4e73df;
+}
+
+
+
+/* Lors de la réduction de la sidebar, cacher le texte */
+.sidebar.active .nav-links li a span {
+  display: none; /* Cacher complètement le texte */
+}
+
+.sidebar.active .nav-links li a {
+  justify-content: center; /* Centrer uniquement les icônes dans la sidebar réduite */
+}
+
+/* Main Content */
+.main-content, .container-fluid{
+  flex: 1;
+  margin-left: 250px;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar.active + .main-content {
+  margin-left: 80px; /* Ajuster la marge lorsque la sidebar est rétrécie */
+}
+
+.sidebar.active + .container-fluid {
+  margin-left: 80px; /* Ajuster la marge lorsque la sidebar est rétrécie */
+}
+
+/* Responsive Styles (Mobile View) */
+@media (max-width: 768px) {
+  .sidebar.active {
+      width: 60px; /* Sidebar réduite pour les petits écrans */
+  }
+
+  .sidebar ul li a {
+      justify-content: center; /* Centrer les icônes pour les petits écrans */
+  }
+
+  .sidebar ul li a span {
+      display: none; /* Masquer les textes dans le menu hamburger */
+  }
+
+  .sidebar .logo h2 {
+      font-size: 18px;
+  }
+
+  .sidebar ul li a i {
+      font-size: 24px; /* Agrandir les icônes dans la version mobile */
+  }
+
+  .main-content, .container-fluid {
+      margin-left: 60px; /* Ajuster la marge pour les petits écrans */
+  }
+}
+
+#togglePieceJointe {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+
+#toggleIcon {
+  transition: transform 0.3s;
+}
+
+#toggleText {
+  margin-left: 8px;
+}
+

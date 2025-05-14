@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MonApp - Consulter les demandes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/navigationadmin.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+            /* Styles pour les nouvelles demandes */
+    .new-demand {
+        background-color: rgba(255, 240, 200, 0.8) !important;
+        border-left: 4px solid #ff9800 !important;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
+    }
+
+    /* Style pour le compteur de nouvelles demandes */
+    #newDemandeCount {
+        background-color: #ff9800;
+        color: white;
+        border-radius: 10px;
+        padding: 2px 6px;
+        font-size: 12px;
+        margin-left: 5px;
+    }
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination-info {
+            margin-right: 20px;
+            align-self: center;
+        }
+        .badge-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .badge-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .badge-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        .pagination .page-link {
+            /*color: #0d6efd;*/
+        }
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            background-color: #fff;
+            border-color: #dee2e6;
+        }
+        .no-attachment {
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <%- include('../navbaradmin') %>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="row page-header">
+                <div class="col-md-6">
+                    <h2>Consulter les demandes</h2>
+                    <p class="text-muted">Gérez les demandes de congés et de permissions</p>
+                </div>
+                <div class="col-md-6 d-flex justify-content-end align-items-center">
+                    <div class="notification-icon">
+                        <span>En attente </span> <i class="fas fa-bell fa-lg"></i>
+                        <span class="notification-badge" id="pendingCount"><%= demandes.filter(d => d.statut === 'en attente').length %></span>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar">AR</div>
+                        <div>
+                            <div class="user-name">Admin RH</div>
+                            <div class="user-role">Responsable RH</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row filters">
+                <div class="col-md-4">
+                    <div class="search-container">
+                        <i class="fas fa-search text-muted"></i>
+                        <input type="text" id="rechercheDemande" placeholder="Rechercher une demande...">
+                    </div>
+                </div>
+                <div class="col-md-8 d-flex justify-content-end align-items-center">
+                    <select class="form-select me-2" id="filtreStatut" style="width: auto;">
+                        <option selected value="">Tous les statuts</option>
+                        <option value="en attente">En attente</option>
+                        <option value="approuvé">Approuvé</option>
+                        <option value="refusé">Rejeté</option>
+                    </select>
+                    <select class="form-select me-2" id="filtreType" style="width: auto;">
+                        <option selected value="">Tous les types</option>
+                        <!-- Les autres options seront ajoutées dynamiquement -->
+                    </select>
+                    <button class="btn btn-primary" id="btnFiltrer">Filtrer</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Demandes à traiter (<span id="demandeCount">0</span>)</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Employé</th>
+                                    <th>Type</th>
+                                    <th>Dates(debut-fin)</th>
+                                    <th>Période</th>
+                                    <th>Durée</th>
+                                    <th>Statut</th>
+                                    <th>Date demande</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="demandeTableBody">
+                                <!-- Le contenu sera chargé dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pagination-container">
+                <div class="pagination-info" id="paginationInfo">Page 1 sur 1</div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination" id="pagination">
+                        <!-- La pagination sera générée dynamiquement -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour visualiser les détails d'une demande -->
+    <div class="modal fade" id="demandDetailsModal" tabindex="-1" aria-labelledby="demandDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="demandDetailsModalLabel">Détails de la demande</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Informations de l'employé</h6>
+                            <div class="d-flex align-items-center mb-3">
+                                <div id="modalUserInitials" style="width: 50px; height: 50px; background-color: #4e73df; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 15px; font-size: 20px;"></div>
+                                <div>
+                                    <h5 class="mb-0" id="modalUserName"></h5>
+                                    <span class="text-muted" id="modalUserRole">Employé</span>
+                                </div>
+                            </div>
+                            <p><strong>Email:</strong> <span id="modalUserEmail"></span></p>
+                            <p><strong>Référence:</strong> <span id="modalReference"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Informations de la demande</h6>
+                            <p><strong>Type de congé:</strong> <span id="modalCongeType"></span></p>
+                            <p><strong>Période:</strong> <span id="modalPeriode"></span></p>
+                            <p><strong>Durée:</strong> <span id="modalDuree"></span></p>
+                            <p><strong>Date de la demande:</strong> <span id="modalDateDemande"></span></p>
+                            <p><strong>Statut:</strong> <span id="modalStatut"></span></p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>Motif</h6>
+                            <p class="border p-3 rounded bg-light" id="modalMotif"></p>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Pièce jointe</h6>
+                            <div id="attachmentContainer">
+                                <button id="openPieceJointeModal" class="btn btn-primary">
+                                    <i class="fas fa-eye"></i>
+                                    <span id="toggleText">Afficher</span>
+                                </button>
+                                <span id="noAttachmentText" class="no-attachment" style="display: none;">Aucune pièce jointe</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3" id="commentSection">
+                        <div class="col-12">
+                            <h6>Commentaire (optionnel)</h6>
+                            <textarea class="form-control" id="modalComment" rows="3" placeholder="Ajouter un commentaire..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-danger" id="modalBtnReject">Refuser</button>
+                    <button type="button" class="btn btn-success" id="modalBtnApprove">Approuver</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour afficher la pièce jointe -->
+    <div class="modal fade" id="pieceJointeModal" tabindex="-1" aria-labelledby="pieceJointeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pieceJointeModalLabel">Pièce jointe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <iframe id="pieceJointeIframe" style="width: 100%; height: 500px;" frameborder="0"></iframe>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/feedback.js"></script>
+    <script>
+        // Variables globales
+        let allDemandes = <%- JSON.stringify(demandes) %>;
+        let currentPage = 1;
+        const itemsPerPage = 4; // 4 lignes par page
+        let currentFilter = {
+            search: '',
+            statut: '',
+            type: ''
+        };
+
+        // Fonction pour formater les dates
+        function formatDate(dateString) {
+            const options = { day: 'numeric', month: 'numeric', year: 'numeric' };
+            return new Date(dateString).toLocaleDateString('fr-FR', options);
+        }
+
+        // Fonction pour calculer la durée
+        function calculateDuree(dateDebut, dateFin, periode) {
+            const diff = new Date(dateFin).getTime() - new Date(dateDebut).getTime();
+            let duree = Math.ceil(diff / (1000 * 3600 * 24)) + 1;
+            if (periode === 'matin' || periode === 'soir') {
+                duree *= 0.5;
+            }
+            return duree;
+        }
+
+        // Fonction pour afficher les demandes filtrées et paginées
+        function displayDemandes() {
+    // Appliquer les filtres
+    let filteredDemandes = allDemandes.filter(demande => {
+        const texte = (
+            demande.nom_utilisateur.toLowerCase() + ' ' +
+            demande.type_conge.toLowerCase() + ' ' +
+            (demande.periode_journee || '').toLowerCase() + ' ' +
+            (demande.statut || '').toLowerCase()
+        );
+
+        const matchSearch = !currentFilter.search ||
+            texte.includes(currentFilter.search.toLowerCase());
+        const matchStatut = !currentFilter.statut ||
+            demande.statut === currentFilter.statut;
+        const matchType = !currentFilter.type ||
+            demande.type_conge === currentFilter.type;
+
+        return matchSearch && matchStatut && matchType;
+    });
+
+    // Calculer la pagination
+    const totalPages = Math.ceil(filteredDemandes.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedDemandes = filteredDemandes.slice(startIndex, startIndex + itemsPerPage);
+
+    // Compter les nouvelles demandes non vues
+    const newDemandesCount = filteredDemandes.filter(d => !d.statut_vue).length;
+
+    // Mettre à jour les compteurs
+    document.getElementById('demandeCount').textContent = filteredDemandes.length;
+    document.getElementById('pendingCount').textContent =
+        filteredDemandes.filter(d => d.statut === 'en attente').length;
+
+    // Ajouter le compteur de nouvelles demandes
+    const demandeCountElement = document.getElementById('demandeCount');
+    if (newDemandesCount > 0) {
+        demandeCountElement.innerHTML = `${filteredDemandes.length} <span id="newDemandeCount">${newDemandesCount}</span>`;
+    } else {
+        demandeCountElement.textContent = filteredDemandes.length;
+    }
+
+    // Générer le tableau
+    const tbody = document.getElementById('demandeTableBody');
+    tbody.innerHTML = '';
+
+    if (paginatedDemandes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Aucune demande trouvée</td></tr>';
+    } else {
+        paginatedDemandes.forEach(demande => {
+            let classDemande = '', badgeClass = '', statusText = '';
+
+            if (demande.statut === 'en attente') {
+                classDemande = 'pending';
+                badgeClass = 'badge-pending';
+                statusText = 'En attente';
+            } else if (demande.statut === 'approuvé') {
+                classDemande = 'approved';
+                badgeClass = 'badge-approved';
+                statusText = 'Approuvé';
+            } else if (demande.statut === 'refusé') {
+                classDemande = 'rejected';
+                badgeClass = 'badge-rejected';
+                statusText = 'Rejeté';
+            }
+
+            // Ajouter la classe pour les nouvelles demandes
+            if (!demande.statut_vue) {
+                classDemande += ' new-demand';
+            }
+
+            const nomSplit = demande.nom_utilisateur.split(' ');
+            let initials = nomSplit.length >= 2 ? nomSplit[0][0] + nomSplit[1][0] : nomSplit[0].substring(0, 2);
+            const duree = calculateDuree(demande.date_debut, demande.date_fin, demande.periode_journee);
+
+            tbody.innerHTML += `
+                <tr class="demand-item ${classDemande}" data-id="${demande.id}">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div style="width: 30px; height: 30px; background-color: #4e73df; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 10px;">${initials}</div>
+                            <div>${demande.nom_utilisateur}</div>
+                        </div>
+                    </td>
+                    <td>${demande.type_conge}</td>
+                    <td>${formatDate(demande.date_debut)} - ${formatDate(demande.date_fin)}</td>
+                    <td>${demande.periode_journee}</td>
+                    <td>${duree} jour${duree > 1 ? 's' : ''}</td>
+                    <td><span class="badge ${badgeClass} rounded-pill px-3 py-2">${statusText}</span></td>
+                    <td>${formatDate(demande.date_demande)}</td>
+                    <td class="action-buttons">
+                        ${demande.statut === 'en attente' ? `
+                            <button class="btn btn-sm btn-success btn-accept" data-id="${demande.id}"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-sm btn-danger btn-reject" data-id="${demande.id}"><i class="fas fa-times"></i></button>
+                        ` : ''}
+                        <button class="btn btn-sm btn-info btn-view" data-id="${demande.id}"><i class="fas fa-eye"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    // Mettre à jour la pagination
+    updatePagination(totalPages);
+}
+
+
+        // Fonction pour mettre à jour la pagination
+        function updatePagination(totalPages) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            // Bouton Précédent
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" tabindex="-1">Précédent</a>`;
+            prevLi.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayDemandes();
+                }
+            });
+            pagination.appendChild(prevLi);
+
+            // Boutons de page
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            if (startPage > 1) {
+                const firstPageLi = document.createElement('li');
+                firstPageLi.className = 'page-item';
+                firstPageLi.innerHTML = `<a class="page-link" href="#">1</a>`;
+                firstPageLi.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentPage = 1;
+                    displayDemandes();
+                });
+                pagination.appendChild(firstPageLi);
+
+                if (startPage > 2) {
+                    const ellipsisLi = document.createElement('li');
+                    ellipsisLi.className = 'page-item disabled';
+                    ellipsisLi.innerHTML = `<span class="page-link">...</span>`;
+                    pagination.appendChild(ellipsisLi);
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageLi = document.createElement('li');
+                pageLi.className = `page-item ${currentPage === i ? 'active' : ''}`;
+                pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                pageLi.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentPage = i;
+                    displayDemandes();
+                });
+                pagination.appendChild(pageLi);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsisLi = document.createElement('li');
+                    ellipsisLi.className = 'page-item disabled';
+                    ellipsisLi.innerHTML = `<span class="page-link">...</span>`;
+                    pagination.appendChild(ellipsisLi);
+                }
+
+                const lastPageLi = document.createElement('li');
+                lastPageLi.className = 'page-item';
+                lastPageLi.innerHTML = `<a class="page-link" href="#">${totalPages}</a>`;
+                lastPageLi.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentPage = totalPages;
+                    displayDemandes();
+                });
+                pagination.appendChild(lastPageLi);
+            }
+
+            // Bouton Suivant
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#">Suivant</a>`;
+            nextLi.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayDemandes();
+                }
+            });
+            pagination.appendChild(nextLi);
+
+            // Mettre à jour l'information de pagination
+            document.getElementById('paginationInfo').textContent = `Page ${currentPage} sur ${totalPages}`;
+        }
+
+        // Fonction pour gérer les actions sur les demandes
+        async function updateDemandeStatus(demandeId, action) {
+    const comment = document.getElementById('modalComment')?.value || '';
+    try {
+        // Première requête pour mettre à jour le statut
+        const updateResponse = await fetch('/navigationadmin/action', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ demandeId, action, comment }),
+        });
+
+        // Vérifier si la réponse est OK
+        if (!updateResponse.ok) {
+            throw new Error(`Erreur HTTP: ${updateResponse.status}`);
+        }
+
+        const data = await updateResponse.json();
+
+        if (data.message) {
+            showFeedbackModal({
+                type: 'success',
+                title: 'Succès',
+                message: data.message
+            });
+
+            // Deuxième requête pour recharger les données
+            const reloadResponse = await fetch('/navigationadmin/consultedemande/page');
+
+            // Vérifier le type de contenu
+            const contentType = reloadResponse.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error("La réponse n'est pas du JSON valide");
+            }
+
+            const result = await reloadResponse.json();
+            allDemandes = result.demandes;
+            displayDemandes();
+
+            // Fermer le modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('demandDetailsModal'));
+            if (modal) modal.hide();
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showFeedbackModal({
+            type: 'error',
+            title: 'Erreur',
+            message: error.message || 'Une erreur est survenue lors de la mise à jour du statut.'
+        });
+    }
+}
+
+        // Fonction pour afficher les détails d'une demande
+        window.showDemandDetails = async function(demandeId) {
+    const demande = allDemandes.find(d => d.id === parseInt(demandeId));
+    if (!demande) return;
+
+    window.currentDemande = demande;
+
+    // Appel pour marquer comme vu
+    try {
+        const response = await fetch('/navigationadmin/marquer-comme-vu', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ demandeId }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la mise à jour du statut');
+        }
+
+        // Mettre à jour localement le statut
+        const index = allDemandes.findIndex(d => d.id === parseInt(demandeId));
+        if (index !== -1) {
+            allDemandes[index].statut_vue = true;
+        }
+
+    } catch (error) {
+        console.error('Erreur lors du marquage comme vu:', error);
+    }
+
+    // Afficher les détails de la demande
+    const nomSplit = demande.nom_utilisateur.split(' ');
+    const initiales = nomSplit.length >= 2 ? nomSplit[0][0] + nomSplit[1][0] : nomSplit[0].substring(0, 2);
+    const duree = calculateDuree(demande.date_debut, demande.date_fin, demande.periode_journee);
+
+    document.getElementById('modalUserInitials').textContent = initiales;
+    document.getElementById('modalUserName').textContent = demande.nom_utilisateur;
+    document.getElementById('modalUserEmail').textContent = demande.email;
+    document.getElementById('modalReference').textContent = demande.reference;
+    document.getElementById('modalCongeType').textContent = demande.type_conge;
+    document.getElementById('modalPeriode').textContent = demande.periode_journee;
+    document.getElementById('modalDuree').textContent = `${duree} jour${duree > 1 ? 's' : ''}`;
+
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    document.getElementById('modalDateDemande').textContent = new Date(demande.date_demande).toLocaleDateString('fr-FR', options);
+
+    let badgeClass = '', statusText = '';
+    if (demande.statut === 'en attente') {
+        badgeClass = 'badge badge-pending'; statusText = 'En attente';
+    } else if (demande.statut === 'approuvé') {
+        badgeClass = 'badge badge-approved'; statusText = 'Approuvé';
+    } else if (demande.statut === 'refusé') {
+        badgeClass = 'badge badge-rejected'; statusText = 'Refusé';
+    }
+
+    document.getElementById('modalStatut').innerHTML = `<span class="${badgeClass} rounded-pill px-2 py-1">${statusText}</span>`;
+    document.getElementById('modalMotif').textContent = demande.motif || 'Aucun motif fourni';
+
+    // Gestion de la pièce jointe
+    const attachmentContainer = document.getElementById('attachmentContainer');
+    const openPieceJointeModal = document.getElementById('openPieceJointeModal');
+    const noAttachmentText = document.getElementById('noAttachmentText');
+
+    if (demande.piece_jointe_url) {
+        openPieceJointeModal.style.display = 'block';
+        noAttachmentText.style.display = 'none';
+    } else {
+        openPieceJointeModal.style.display = 'none';
+        noAttachmentText.style.display = 'block';
+    }
+
+    const btnReject = document.getElementById('modalBtnReject');
+    const btnApprove = document.getElementById('modalBtnApprove');
+    const commentSection = document.getElementById('commentSection');
+
+    if (demande.statut === 'en attente') {
+        btnReject.style.display = 'block';
+        btnApprove.style.display = 'block';
+        commentSection.style.display = 'block';
+    } else {
+        btnReject.style.display = 'none';
+        btnApprove.style.display = 'none';
+        commentSection.style.display = 'none';
+    }
+
+    // Afficher le modal
+    const modal = new bootstrap.Modal(document.getElementById('demandDetailsModal'));
+    modal.show();
+
+    // Écouter l'événement de fermeture du modal
+    document.getElementById('demandDetailsModal').addEventListener('hidden.bs.modal', async function() {
+        try {
+            // Recharger les données après la fermeture du modal
+            const reloadResponse = await fetch('/navigationadmin/consultedemande/page');
+            const result = await reloadResponse.json();
+            allDemandes = result.demandes;
+            displayDemandes();
+            updateNewDemandesBadge();
+        } catch (error) {
+            console.error('Erreur lors du rechargement des données:', error);
+        }
+    });
+};
+
+
+
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Charger les types de congé pour le filtre
+            const selectFiltreType = document.getElementById('filtreType');
+            const typeSet = new Set(allDemandes.map(d => d.type_conge).filter(Boolean));
+            selectFiltreType.innerHTML = '<option selected value="">Tous les types</option>';
+            typeSet.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                selectFiltreType.appendChild(option);
+            });
+
+            // Gestion des filtres
+            document.getElementById('rechercheDemande').addEventListener('input', function() {
+                currentFilter.search = this.value;
+                currentPage = 1;
+                displayDemandes();
+            });
+
+            document.getElementById('filtreStatut').addEventListener('change', function() {
+                currentFilter.statut = this.value;
+                currentPage = 1;
+                displayDemandes();
+            });
+
+            document.getElementById('filtreType').addEventListener('change', function() {
+                currentFilter.type = this.value;
+                currentPage = 1;
+                displayDemandes();
+            });
+
+            document.getElementById('btnFiltrer').addEventListener('click', function() {
+                currentPage = 1;
+                displayDemandes();
+            });
+
+            // Gestion des actions sur les demandes
+            document.querySelector('table tbody').addEventListener('click', function(event) {
+                const button = event.target.closest('button');
+                if (!button) return;
+
+                const demandeId = button.getAttribute('data-id');
+                if (button.classList.contains('btn-accept')) {
+                    showConfirmationModal({
+                        title: 'Confirmation',
+                        message: 'Êtes-vous sûr de vouloir accepter cette demande?',
+                        confirmText: 'Accepter',
+                        onConfirm: () => updateDemandeStatus(demandeId, 'approuvé')
+                    });
+                } else if (button.classList.contains('btn-reject')) {
+                    showConfirmationModal({
+                        title: 'Confirmation',
+                        message: 'Êtes-vous sûr de vouloir refuser cette demande?',
+                        confirmText: 'Refuser',
+                        onConfirm: () => updateDemandeStatus(demandeId, 'refusé')
+                    });
+                } else if (button.classList.contains('btn-view')) {
+                    window.showDemandDetails(demandeId);
+                }
+            });
+
+            // Gestion des actions dans le modal
+            document.getElementById('modalBtnApprove').addEventListener('click', function() {
+                if (window.currentDemande) updateDemandeStatus(window.currentDemande.id, 'approuvé');
+            });
+
+            document.getElementById('modalBtnReject').addEventListener('click', function() {
+                if (window.currentDemande) updateDemandeStatus(window.currentDemande.id, 'refusé');
+            });
+
+            // Gestion de la pièce jointe
+            document.getElementById('openPieceJointeModal').addEventListener('click', function() {
+                if (window.currentDemande && window.currentDemande.piece_jointe_url) {
+                    document.getElementById('pieceJointeIframe').src = window.currentDemande.piece_jointe_url;
+                    new bootstrap.Modal(document.getElementById('pieceJointeModal')).show();
+                }
+            });
+
+            // Afficher les demandes initiales
+            displayDemandes();
+        });
+    </script>
+    <script src="/js/animationnav.js"></script>
+    <script src="/js/baractivation.js"></script>
+</body>
+</html>

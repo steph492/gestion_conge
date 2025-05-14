@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Notifications - Employé</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/user.css">
+    <link rel="stylesheet" href="/css/navigationuser.css">
+    <style>
+        :root {
+        --primary-blue: #4e73df;
+        --secondary-blue: #5a8dee;
+        --light-blue: #f0f4ff;
+        --white: #ffffff;
+        --light-gray: #f8f9fc;
+        --border-gray: #dee2e6;
+        --text-dark: #212529;
+        --text-muted: #6c757d;
+        --success: #198754;
+        --danger: #dc3545;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--light-blue);
+        margin: 0;
+        padding: 0;
+        color: var(--text-dark);
+    }
+
+    .container {
+        width: 95%;
+        max-width: 1100px;
+        padding: 30px;
+        background-color: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        transition: box-shadow 0.3s;
+    }
+
+    .container:hover {
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+        font-size: 26px;
+        font-weight: 600;
+        color: var(--primary-blue);
+        margin-bottom: 25px;
+    }
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px 0;
+    background-color: var(--white);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid #eee;
+    margin: -20px -20px 20px -20px;
+    padding: 20px;
+}
+
+
+    .select-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-select {
+        background-color: #e9ecef;
+        color: var(--text-dark);
+        border: 1px solid #dee2e6;
+        padding: 8px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-select:hover {
+        background-color: #dee2e6;
+    }
+
+    .btn-delete-selected {
+        background-color: var(--danger);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-delete-selected:hover {
+        background-color: #bb2d3b;
+    }
+
+    .notification-group {
+        margin-bottom: 30px;
+    }
+
+    .notification-group-header {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        border-bottom: 2px solid var(--primary-blue);
+        padding-bottom: 6px;
+        color: var(--text-dark);
+    }
+
+    .notification-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .notification-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        background-color: var(--light-gray);
+        border-left: 5px solid transparent;
+        transition: all 0.3s;
+        box-shadow:  0 2px 5px rgba(0, 0, 0, 0.02);
+    }
+
+    .notification-item.unread {
+        background-color: #e7edff;
+        border-left-color: var(--primary-blue);
+        font-weight: 500;
+    }
+
+    .notification-item.read {
+        background-color: #ffffff;
+        border-left-color: var(--success);
+        font-weight: 400;
+        color: var(--text-muted);
+    }
+
+    .notification-item.selected {
+        background-color: #e2e6ea;
+        border-left-color: var(--primary-blue);
+    }
+
+    .notification-content {
+        flex: 1;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .notification-checkbox {
+        margin-right: 15px;
+        margin-top: 5px;
+    }
+
+    .notification-avatar {
+        width: 40px;
+        height: 40px;
+        background-color: var(--primary-blue);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 15px;
+        flex-shrink: 0;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .notification-message-container {
+        flex: 1;
+    }
+
+    .notification-message {
+        font-size: 16px;
+        margin-bottom: 6px;
+        color: var(--text-dark);
+    }
+    .notification-date {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .notification-status {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .notification-status.lu {
+        color: var(--success);
+    }
+
+    .notification-status.non-lu {
+        color: var(--primary-blue);
+    }
+
+    .notification-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-left: 20px;
+    }
+
+    .notification-actions .btn {
+        border: none;
+        padding: 8px 14px;
+        border-radius: 25px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s;
+    }
+
+    .btn-mark-read {
+        background-color: #d1e7dd;
+        color: var(--success);
+    }
+
+    .btn-delete {
+        background-color: #f8d7da;
+        color: var(--danger);
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        opacity: 0.9;
+    }
+
+    .notification-empty {
+        text-align: center;
+        font-size: 15px;
+        color: var(--text-muted);
+        padding: 40px 0;
+        font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+        .notification-item {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 18px;
+        }
+
+        .notification-content {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .notification-actions {
+            flex-direction: row;
+            justify-content: flex-end;
+            width: 100%;
+            margin-top: 10px;
+            margin-left: 0;
+        }
+    }
+    </style>
+</head>
+<body>
+    <%- include('../navbar') %>
+    <div class="main-content">
+        <div class="container">
+            <div class="notification-header">
+                <h1>Notifications</h1>
+                <div class="select-actions">
+                    <button class="btn-select" id="selectAll">Sélectionner tout</button>
+                    <button class="btn-select" id="deselectAll">Désélectionner</button>
+                    <button class="btn-delete-selected" id="deleteSelected">Supprimer sélection</button>
+                </div>
+            </div>
+            <ul class="notification-list">
+                <% if (notifications && notifications.length > 0) { %>
+                    <% // Fonction pour regrouper les notifications par date
+                        function groupNotificationsByDate(notifications) {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+
+                            const yesterday = new Date(today);
+                            yesterday.setDate(yesterday.getDate() - 1);
+
+                            const groups = {
+                                today: [],
+                                yesterday: [],
+                                older: []
+                            };
+
+                            notifications.forEach(notification => {
+                                const notificationDate = new Date(notification.date_creation);
+                                notificationDate.setHours(0, 0, 0, 0);
+
+                                if (notificationDate.getTime() === today.getTime()) {
+                                    groups.today.push(notification);
+                                } else if (notificationDate.getTime() === yesterday.getTime()) {
+                                    groups.yesterday.push(notification);
+                                } else {
+                                    groups.older.push(notification);
+                                }
+                            });
+
+                            return groups;
+                        }
+
+                        const groupedNotifications = groupNotificationsByDate(notifications);
+                    %>
+
+                    <% // Afficher les notifications d'aujourd'hui %>
+                    <% if (groupedNotifications.today.length > 0) { %>
+                        <div class="notification-group">
+                            <div class="notification-group-header">Aujourd'hui</div>
+                            <% groupedNotifications.today.forEach(notification => { %>
+                                <li class="notification-item <%= notification.est_lu ? 'read' : 'unread' %>" data-id="<%= notification.id %>">
+                                    <div class="notification-content">
+                                        <input type="checkbox" class="notification-checkbox" data-id="<%= notification.id %>">
+                                        <div class="notification-message">
+                                            <%= notification.message %>
+                                        </div>
+                                        <div>
+                                            <span class="notification-date"><%= new Date(notification.date_creation).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) %></span>
+                                            <span class="notification-status <%= notification.est_lu ? 'lu' : 'non-lu' %>">
+                                                <%= notification.est_lu ? 'Lu' : 'Non lu' %>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="notification-actions">
+                                        <% if (!notification.est_lu) { %>
+                                            <button class="btn btn-mark-read" title="Marquer comme lu"><i class="fas fa-eye"></i></button>
+                                        <% } %>
+                                        <button class="btn btn-delete" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </li>
+                            <% }) %>
+                        </div>
+                    <% } %>
+
+                    <% // Afficher les notifications d'hier %>
+                    <% if (groupedNotifications.yesterday.length > 0) { %>
+                        <div class="notification-group">
+                            <div class="notification-group-header">Hier</div>
+                            <% groupedNotifications.yesterday.forEach(notification => { %>
+                                <li class="notification-item <%= notification.est_lu ? 'read' : 'unread' %>" data-id="<%= notification.id %>">
+                                    <div class="notification-content">
+                                        <input type="checkbox" class="notification-checkbox" data-id="<%= notification.id %>">
+                                        <div class="notification-message">
+                                            <%= notification.message %>
+                                        </div>
+                                        <div>
+                                            <span class="notification-date"><%= new Date(notification.date_creation).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) %></span>
+                                            <span class="notification-status <%= notification.est_lu ? 'lu' : 'non-lu' %>">
+                                                <%= notification.est_lu ? 'Lu' : 'Non lu' %>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="notification-actions">
+                                        <% if (!notification.est_lu) { %>
+                                            <button class="btn btn-mark-read" title="Marquer comme lu"><i class="fas fa-eye"></i></button>
+                                        <% } %>
+                                        <button class="btn btn-delete" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </li>
+                            <% }) %>
+                        </div>
+                    <% } %>
+
+                    <% // Afficher les notifications plus anciennes %>
+                    <% if (groupedNotifications.older.length > 0) { %>
+                        <% // Regrouper les notifications plus anciennes par date
+                            function groupOlderNotifications(notifications) {
+                                const groups = {};
+
+                                notifications.forEach(notification => {
+                                    const notificationDate = new Date(notification.date_creation);
+                                    const dateKey = notificationDate.toLocaleDateString('fr-FR', {
+                                        weekday: 'long',
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    });
+
+                                    if (!groups[dateKey]) {
+                                        groups[dateKey] = [];
+                                    }
+                                    groups[dateKey].push(notification);
+                                });
+
+                                return groups;
+                            }
+
+                            const olderGroups = groupOlderNotifications(groupedNotifications.older);
+                        %>
+
+                        <% Object.keys(olderGroups).forEach(dateKey => { %>
+                            <div class="notification-group">
+                                <div class="notification-group-header"><%= dateKey %></div>
+                                <% olderGroups[dateKey].forEach(notification => { %>
+                                    <li class="notification-item <%= notification.est_lu ? 'read' : 'unread' %>" data-id="<%= notification.id %>">
+                                        <div class="notification-content">
+                                            <input type="checkbox" class="notification-checkbox" data-id="<%= notification.id %>">
+                                            <div class="notification-message">
+                                                <%= notification.message %>
+                                            </div>
+                                            <div>
+                                                <span class="notification-date"><%= new Date(notification.date_creation).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) %></span>
+                                                <span class="notification-status <%= notification.est_lu ? 'lu' : 'non-lu' %>">
+                                                    <%= notification.est_lu ? 'Lu' : 'Non lu' %>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="notification-actions">
+                                            <% if (!notification.est_lu) { %>
+                                                <button class="btn btn-mark-read" title="Marquer comme lu"><i class="fas fa-eye"></i></button>
+                                            <% } %>
+                                            <button class="btn btn-delete" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                        </div>
+                                    </li>
+                                <% }) %>
+                            </div>
+                        <% }) %>
+                    <% } %>
+                <% } else { %>
+                    <li class="notification-empty">Aucune notification</li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Scripts Bootstrap requis pour le modal -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Votre fichier feedback.js -->
+    <script src="/js/feedback.js"></script>
+
+     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Gestion des boutons individuels
+            document.querySelectorAll('.btn-mark-read').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const li = btn.closest('.notification-item');
+                    const id = li.dataset.id;
+                    fetch(`/navigationuser/notifications/mark-read/${id}`, { method: 'POST' })
+                        .then(res => res.json())
+                        .then(() => {
+                            location.reload();
+                        })
+                        .catch(error => {
+                            console.error('Erreur:', error);
+                            showFeedbackModal({
+                                type: 'error',
+                                title: 'Erreur',
+                                message: 'Une erreur est survenue lors du marquage comme lu'
+                            });
+                        });
+                });
+            });
+
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const li = btn.closest('.notification-item');
+                    const id = li.dataset.id;
+
+                    showConfirmationModal({
+                        title: 'Suppression de notification',
+                        message: 'Voulez-vous vraiment supprimer cette notification ?',
+                        onConfirm: () => {
+                            fetch(`/navigationuser/notifications/delete/${id}`, { method: 'DELETE' })
+                                .then(res => {
+                                    if (!res.ok) {
+                                        throw new Error('Erreur réseau');
+                                    }
+                                    return res.json();
+                                })
+                                .then(() => {
+                                    li.remove();
+                                    showFeedbackModal({
+                                        type: 'success',
+                                        title: 'Succès',
+                                        message: 'Notification supprimée avec succès'
+                                    });
+                                })
+                                .catch(error => {
+                                    console.error('Erreur:', error);
+                                    showFeedbackModal({
+                                        type: 'error',
+                                        title: 'Erreur',
+                                        message: 'Une erreur est survenue lors de la suppression'
+                                    });
+                                });
+                        }
+                    });
+                });
+            });
+
+            // Gestion de la sélection multiple
+            const selectAllBtn = document.getElementById('selectAll');
+            const deselectAllBtn = document.getElementById('deselectAll');
+            const deleteSelectedBtn = document.getElementById('deleteSelected');
+            const checkboxes = document.querySelectorAll('.notification-checkbox');
+
+            // Variable pour stocker les IDs sélectionnés
+            let selectedIds = new Set();
+
+            // Fonction pour mettre à jour selectedIds
+            function updateSelectedIds() {
+                selectedIds.clear();
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        selectedIds.add(checkbox.dataset.id);
+                    }
+                });
+            }
+
+            selectAllBtn.addEventListener('click', function() {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                    checkbox.closest('.notification-item').classList.add('selected');
+                });
+                updateSelectedIds();
+            });
+
+            deselectAllBtn.addEventListener('click', function() {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                    checkbox.closest('.notification-item').classList.remove('selected');
+                });
+                selectedIds.clear();
+            });
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const item = this.closest('.notification-item');
+                    if (this.checked) {
+                        item.classList.add('selected');
+                    } else {
+                        item.classList.remove('selected');
+                    }
+                    updateSelectedIds();
+                });
+            });
+
+            deleteSelectedBtn.addEventListener('click', function() {
+                // Mettre à jour selectedIds avant de vérifier
+                updateSelectedIds();
+
+                if (selectedIds.size === 0) {
+                    showFeedbackModal({
+                        type: 'warning',
+                        title: 'Avertissement',
+                        message: 'Veuillez sélectionner au moins une notification à supprimer'
+                    });
+                    return;
+                }
+
+                showConfirmationModal({
+                    title: 'Suppression multiple',
+                    message: `Voulez-vous vraiment supprimer ${selectedIds.size} notification(s) ?`,
+                    onConfirm: () => {
+                        // Convertir le Set en tableau pour l'envoi
+                        const idsArray = Array.from(selectedIds);
+
+                        fetch(`/navigationuser/notifications/delete-multiple`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ ids: idsArray })
+                        })
+                        .then(res => {
+                            if (!res.ok) {
+                                throw new Error('Erreur réseau');
+                            }
+                            return res.json();
+                        })
+                        .then(() => {
+                            // Supprimer les éléments du DOM
+                            idsArray.forEach(id => {
+                                const item = document.querySelector(`.notification-item[data-id="${id}"]`);
+                                if (item) item.remove();
+                            });
+
+                            // Vider le Set après suppression
+                            selectedIds.clear();
+
+                            showFeedbackModal({
+                                type: 'success',
+                                title: 'Succès',
+                                message: `${idsArray.length} notification(s) supprimée(s) avec succès`
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Erreur:', error);
+                            showFeedbackModal({
+                                type: 'error',
+                                title: 'Erreur',
+                                message: 'Une erreur est survenue lors de la suppression'
+                            });
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+    <script src="/js/animationnav.js"></script>
+    <script src="/js/baractivation.js"></script>
+    <script src="/js/effet.js"></script>
+</body>
+</html>

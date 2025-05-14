@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tableau de bord - Administrateur RH</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Google Fonts : Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Boxicons pour les icônes -->
+  <link href="https://cdn.jsdelivr.net/npm/boxicons/css/boxicons.min.css" rel="stylesheet">
+
+  <!-- CSS personnalisé -->
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+      <!-- Inclure la barre de navigation -->
+  <%- include('navbaradmin') %>
+
+  <!-- Contenu principal -->
+  <div class="main-content">
+    <header>
+      <h1>Bienvenue, <!--%= utilisateur.nom %--></h1>
+    </header>
+
+    <section class="content">
+      <!-- Contenu principal de la page -->
+      <p>Bienvenue sur votre tableau de bord, Administrateur RH. Utilisez le menu pour naviguer et gérer les demandes de congé.</p>
+    </section>
+  </div>
+
+  <script src="/js/animationnav.js"></script>
+</body>
+</html>
