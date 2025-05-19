@@ -1,4 +1,4 @@
-const navLinks = document.querySelectorAll('.nav-links a');
+/*const navLinks = document.querySelectorAll('.nav-links a');
 const mainContent = document.querySelector('.main-content');
 
 function animateMainContent() {
@@ -18,4 +18,5 @@ navLinks.forEach(link => {
     link.addEventListener('click', e => {
         animateMainContent();
     });
-});
+});*/
+

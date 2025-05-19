@@ -135,8 +135,8 @@ body {
   transition: margin-left 0.3s ease;
 }
 
-.sidebar.active + .main-content {
-  margin-left: 80px; /* Ajuster la marge lorsque la sidebar est rétrécie */
+.sidebar.active ~ .main-content {
+  margin-left: 80px;
 }
 
 /* Responsive Styles (Mobile View) */

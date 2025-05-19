@@ -6,76 +6,92 @@
     </h2>
   </div>
   <ul class="nav-links">
-      <li><a href="/navigationadmin/adminbord"><i class="bx bx-home"></i><span>Tableau de bord</span></a></li>
-      <li>
-          <a href="/navigationadmin/consultedemande">
-              <i class="bx bx-list-ul"></i>
-              <span>Consulter les demandes</span>
-              <span class="sidebar-badge" id="sidebarNewDemandeBadge"></span>
-          </a>
-      </li>
-      <li><a href="/navigationadmin/statadmin"><i class="bx bx-stats"></i><span>Statistiques des absences</span></a></li>
-      <li><a href="/navigationadmin/typeconge"><i class="bx bx-cog"></i><span>Gérer les types de congés</span></a></li>
-      <li><a href="/navigationadmin/gestionsolde"><i class="bx bx-cog"></i><span>Solde de congés</span></a></li>
-      <li>
-        <a href="/navigationadmin/notificationadmin">
+    <li>
+      <a href="/navigationadmin/adminbord"><i class="bx bx-home"></i><span>Tableau de bord</span></a>
+    </li>
+    <li>
+      <a href="/navigationadmin/consultedemande" class="has-badge">
+        <div class="icon-wrapper">
+          <i class="bx bx-list-ul"></i>
+          <span class="sidebar-badge" id="sidebarNewDemandeBadge"></span>
+        </div>
+        <span>Consulter les demandes</span>
+      </a>
+    </li>
+    <li><a href="/navigationadmin/statadmin"><i class="bx bx-stats"></i><span>Statistiques des absences</span></a></li>
+    <li><a href="/navigationadmin/typeconge"><i class="bx bx-cog"></i><span>Gérer les types de congés</span></a></li>
+    <li><a href="/navigationadmin/gestionsolde"><i class="bx bx-cog"></i><span>Solde de congés</span></a></li>
+    <li>
+      <a href="/navigationadmin/notificationadmin" class="has-badge">
+        <div class="icon-wrapper">
           <i class='bx bx-bell'></i>
-          <span>Notifications</span>
           <span class="sidebar-badge" id="sidebarNotificationBadge"></span>
-        </a>
-      </li>      
-      <li><a href="#"><i class="bx bx-file"></i><span>Exporter les historiques</span></a></li>
-      <li><a href="/deconnexion"><i class="bx bx-log-out"></i><span>Déconnexion</span></a></li>
+        </div>
+        <span>Notifications</span>
+      </a>
+    </li>
+    <li><a href="#"><i class="bx bx-file"></i><span>Exporter les historiques</span></a></li>
+    <li><a href="/deconnexion"><i class="bx bx-log-out"></i><span>Déconnexion</span></a></li>
   </ul>
 </div>
 
+
 <style>
-  /* Style de base pour les badges */
-/* Style pour le badge des nouvelles demandes */
-.sidebar-badge {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: #ff9800;
-    color: white;
-    border-radius: 10px;
-    padding: 2px 6px;
-    font-size: 10px;
-    font-weight: bold;
-    display: none;
+  /* Conteneur pour icône + badge */
+.icon-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 24px; /* Ajuste selon la taille de tes icônes */
+  height: 24px;
 }
 
-/* Style pour le lien avec badge */
-.nav-links li a.has-badge {
-    position: relative;
+/* Style de base pour les badges */
+.sidebar-badge {
+  position: absolute;
+  top: -13px;
+  right: -6px;
+  background-color: #ff9800;
+  color: white;
+  border-radius: 50%;
+  padding: 6px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  display: none;
+  min-width: 18px;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
+
+/* Animation pour badges avec nouveautés */
 @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
-        70% { box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
-    }
+  0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
+}
+
 .new-badge {
-    animation: pulse 1.5s ease-in-out infinite;
+  animation: pulse 1.5s ease-in-out infinite;
 }
 </style>
 
 <script>
   // --- Mise à jour badge des nouvelles demandes ---
   function updateSidebarNewDemandeBadge(count) {
-    const badge = document.getElementById('sidebarNewDemandeBadge');
-    const link = badge.closest('a');
+  const badge = document.getElementById('sidebarNewDemandeBadge');
+  const link = badge.closest('a');
 
-    if (count > 0) {
-      badge.textContent = count;
-      badge.style.display = 'inline-block';
-      badge.classList.add('new-badge');
-      if (link) link.classList.add('has-badge');
-    } else {
-      badge.style.display = 'none';
-      badge.classList.remove('new-badge');
-      if (link) link.classList.remove('has-badge');
-    }
+  if (count > 0) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'inline-block';
+    badge.classList.add('new-badge');
+    if (link) link.classList.add('has-badge');
+  } else {
+    badge.style.display = 'none';
+    badge.classList.remove('new-badge');
+    if (link) link.classList.remove('has-badge');
+  }
   }
 
   function fetchNewDemandesCount() {
@@ -90,21 +106,21 @@
   }
 
   // --- Mise à jour badge des notifications ---
-  function updateSidebarNotificationBadge(count) {
-    const badge = document.getElementById('sidebarNotificationBadge');
-    const link = badge.closest('a');
+function updateSidebarNotificationBadge(count) {
+  const badge = document.getElementById('sidebarNotificationBadge');
+  const link = badge.closest('a');
 
-    if (count > 0) {
-      badge.textContent = count;
-      badge.style.display = 'inline-block';
-      badge.classList.add('new-badge');
-      if (link) link.classList.add('has-badge');
-    } else {
-      badge.style.display = 'none';
-      badge.classList.remove('new-badge');
-      if (link) link.classList.remove('has-badge');
-    }
+  if (count > 0) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'inline-block';
+    badge.classList.add('new-badge');
+    if (link) link.classList.add('has-badge');
+  } else {
+    badge.style.display = 'none';
+    badge.classList.remove('new-badge');
+    if (link) link.classList.remove('has-badge');
   }
+}
 
   function fetchNotificationCount() {
     fetch('/navigationadmin/get-notifications-count')

@@ -210,9 +210,9 @@ router.post('/action', async (req, res) => {
   }
 
   try {
-    // 1. D'abord marquer la demande comme vue
+    // 1. D'abord marquer la demande comme vue et traitée
     await db.promise().query(
-      'UPDATE conges SET statut_vue = TRUE WHERE id = ?',
+      'UPDATE conges SET statut_vue = TRUE, traite = TRUE WHERE id = ?',
       [demandeId]
     );
 

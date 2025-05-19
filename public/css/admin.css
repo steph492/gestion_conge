@@ -139,7 +139,7 @@ body {
   margin-left: 80px; /* Ajuster la marge lorsque la sidebar est rétrécie */
 }
 
-.sidebar.active + .container-fluid {
+.sidebar.active ~ .container-fluid {
   margin-left: 80px; /* Ajuster la marge lorsque la sidebar est rétrécie */
 }
 

@@ -1299,3 +1299,127 @@ body {
 .bg-info {
   background-color: #17a2b8 !important;
 }
+
+
+
+
+
+
+
+
+
+/* Style pour le message d'erreur de solde */
+.solde-error {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: rgba(220, 53, 69, 0.1);
+    border-radius: 0.25rem;
+    border-left: 4px solid #dc3545;
+    display: none;
+    position: relative;
+    overflow: hidden;
+    animation: pulseError 1.5s infinite;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.solde-error::before {
+    content: "⚠";
+    margin-right: 0.5rem;
+    font-size: 1.2em;
+    left: 1rem;
+}
+
+.solde-error.show {
+    display: block;
+    animation: none;
+}
+
+@keyframes pulseError {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+        transform: scale(1.02);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+        transform: scale(1);
+    }
+}
+
+/* Animation pour les champs en erreur */
+.date-error {
+    border-color: #dc3545 !important;
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    20%, 60% {
+        transform: translateX(-5px);
+    }
+    40%, 80% {
+        transform: translateX(5px);
+    }
+}
+
+/* Style pour le conteneur des dates */
+.date-container {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+/* Style pour l'icône d'erreur */
+.error-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #dc3545;
+    display: none;
+}
+
+/* Style pour le message d'erreur visible */
+.solde-error.visible {
+    display: block;
+    animation: none;
+}
+
+/* Style pour le message d'erreur avec effet de fondu */
+.solde-error.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Style pour le message d'erreur avec effet de fondu sortant */
+.solde-error.fade-out {
+    animation: fadeOut 0.3s ease-in-out;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}

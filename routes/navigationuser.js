@@ -48,7 +48,7 @@ router.get('/', async (req, res) => {
         const [demandesResults] = await db.promise().query(`
             SELECT id, type_conge, date_debut, date_fin, statut, motif, date_demande,
                    date_validation, validateur_id, commentaire, piece_jointe, date_modification,
-                   periode_journee
+                   periode_journee, traite
             FROM conges
             WHERE utilisateur_id = ?
             ORDER BY id DESC
@@ -66,8 +66,9 @@ router.get('/', async (req, res) => {
             demande.reference = 'REF-' + demande.id;
         });
 
-        const [soldeResult] = await db.promise().query('SELECT solde_conges FROM utilisateurs WHERE id = ?', [userId]);
+        const [soldeResult] = await db.promise().query('SELECT solde_conges, solde_utilisable FROM utilisateurs WHERE id = ?', [userId]);
         const soldeConge = soldeResult.length > 0 ? soldeResult[0].solde_conges : 0;
+        const soldeUtilisable = soldeResult.length > 0 ? soldeResult[0].solde_utilisable : 0;
 
         // Récupérer les types de congés
         const [typesConges] = await db.promise().query('SELECT id_type_conge, nom_type_conge FROM type_conges');
@@ -75,6 +76,7 @@ router.get('/', async (req, res) => {
         res.render('navigationuser/gestiondemande', {
             demandes: demandesResults,
             soldeConge: soldeConge,
+            soldeUtilisable: soldeUtilisable,
             typesConges: typesConges,
             pagination: {
                 currentPage: page,
@@ -105,6 +107,29 @@ router.post('/demande', upload.single('piece_jointe'), async (req, res) => {
         const typeConge = await getTypeCongeById(type_conge);
         const nomTypeConge = typeConge.nom_type_conge;
 
+        // Récupérer le solde de l'utilisateur
+        const [soldeResult] = await db.promise().query('SELECT solde_conges, solde_utilisable FROM utilisateurs WHERE id = ?', [utilisateur_id]);
+        const soldeConge = soldeResult[0].solde_conges;
+        const soldeUtilisable = soldeResult[0].solde_utilisable;
+
+        // Calculer la durée de la demande
+        const debut = new Date(date_debut);
+        const fin = new Date(date_fin);
+        const diff = fin.getTime() - debut.getTime();
+        let duree = Math.ceil(diff / (1000 * 3600 * 24)) + 1;
+
+        if (periode_journee === 'matin' || periode_journee === 'soir') {
+            duree = duree * 0.5;
+        }
+
+        // Vérifier le solde
+        const soldeMin = Math.min(soldeConge, soldeUtilisable);
+        if (duree > soldeMin) {
+            return res.status(400).json({
+                message: "Solde congés payés insuffisant pour cette demande."
+            });
+        }
+
         // Insertion de la demande avec le nom du type de congé
         const [result] = await db.promise().query(
             `INSERT INTO conges (utilisateur_id, type_conge, date_debut, date_fin, statut, motif, periode_journee, piece_jointe)
@@ -118,18 +143,17 @@ router.post('/demande', upload.single('piece_jointe'), async (req, res) => {
             [utilisateur_id]
         );
         const userName = userResult[0].nom; // Seulement le nom
-        
-        
+
         await db.promise().query(
             `INSERT INTO notifications (id_utilisateur, message, est_lu, date_creation)
              VALUES (?, ?, ?, NOW())`,
             [
                 utilisateur_id,
-                `une nouvelle demande de congé de type "${nomTypeConge}" du ${new Date(date_debut).toLocaleDateString('fr-FR')} au ${new Date(date_fin).toLocaleDateString('fr-FR')} est arrivé.`,
+                `une nouvelle demande de congé de type "${nomTypeConge}" du ${new Date(date_debut).toLocaleDateString('fr-FR')} au ${new Date(date_fin).toLocaleDateString('fr-FR')} est arrivée.`,
                 0
             ]
         );
-        
+
         console.log("Demande enregistrée :", result.insertId);
         res.status(200).json({ message: "Demande envoyée avec succès." });
     } catch (err) {
@@ -209,55 +233,61 @@ router.post('/modifier/:id', async (req, res) => {
         res.status(500).json({ message: "Erreur serveur lors de la mise à jour." });
     }
 });
-// Route GET - Consulter toutes les demandes (version API pour actualisation)
-router.get('/demande/page', (req, res) => {
-  // Vérifier que l'utilisateur est connecté
-  if (!req.session.userId) {
-    return res.status(401).json({ success: false, message: "Non autorisé" });
-  }
+//route poure le rechargement 
+// Route GET pour le rechargement des demandes avec pagination
+router.get('/demandes/page/:page', async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const page = parseInt(req.params.page) || 1;
+        const limit = 5;
+        const offset = (page - 1) * limit;
 
-  const queryDemandes = `
-    SELECT c.*, tc.nom_type_conge AS type_conge
-    FROM conges c
-    JOIN type_conges tc ON c.type_conge = tc.id_type_conge
-    WHERE c.utilisateur_id = ?
-    ORDER BY c.date_demande DESC
-  `;
+        // Récupérer les demandes paginées
+        const [demandesResults] = await db.promise().query(`
+            SELECT id, type_conge, date_debut, date_fin, statut, motif, date_demande,
+                   date_validation, validateur_id, commentaire, piece_jointe, date_modification,
+                   periode_journee
+            FROM conges
+            WHERE utilisateur_id = ?
+            ORDER BY id DESC
+            LIMIT ? OFFSET ?`, [userId, limit, offset]);
 
-  db.query(queryDemandes, [req.session.userId], (errDemandes, demandesResult) => {
-    if (errDemandes) {
-      console.error('Erreur récupération demandes :', errDemandes);
-      return res.status(500).json({ success: false, message: "Erreur lors de la récupération des demandes" });
+        // Calculer la durée pour chaque demande
+        demandesResults.forEach(demande => {
+            const debut = new Date(demande.date_debut);
+            const fin = new Date(demande.date_fin);
+            const diff = fin.getTime() - debut.getTime();
+            let duree = Math.ceil(diff / (1000 * 3600 * 24)) + 1;
+            if (demande.periode_journee === 'matin' || demande.periode_journee === 'soir') {
+                duree = duree * 0.5;
+            }
+            demande.duree = duree;
+            demande.reference = 'REF-' + demande.id;
+        });
+
+        // Récupérer le nombre total de demandes pour la pagination
+        const [countResult] = await db.promise().query('SELECT COUNT(*) as total FROM conges WHERE utilisateur_id = ?', [userId]);
+        const totalDemandes = countResult[0].total;
+        const totalPages = Math.ceil(totalDemandes / limit);
+
+        res.json({
+            success: true,
+            demandes: demandesResults,
+            pagination: {
+                currentPage: page,
+                totalPages: totalPages,
+                totalItems: totalDemandes,
+                startItem: offset + 1,
+                endItem: Math.min(offset + limit, totalDemandes)
+            }
+        });
+    } catch (err) {
+        console.error('Erreur:', err);
+        res.status(500).json({
+            success: false,
+            message: "Erreur serveur lors du chargement des demandes"
+        });
     }
-
-    const demandesWithDetails = demandesResult.map(demande => {
-      // Vérifier que les dates existent
-      if (!demande.date_debut || !demande.date_fin) {
-        return {
-          ...demande,
-          duree: 0,
-          reference: 'REF-' + demande.id
-        };
-      }
-
-      const debut = new Date(demande.date_debut);
-      const fin = new Date(demande.date_fin);
-      const diff = fin.getTime() - debut.getTime();
-      let duree = Math.ceil(diff / (1000 * 3600 * 24)) + 1;
-
-      if (demande.periode_journee === 'matin' || demande.periode_journee === 'soir') {
-        duree = duree * 0.5;
-      }
-
-      return {
-        ...demande,
-        duree,
-        reference: 'REF-' + demande.id
-      };
-    });
-
-    res.json({ success: true, demandes: demandesWithDetails });
-  });
 });
 
 
@@ -476,12 +506,41 @@ router.post('/notifications/delete-multiple', async (req, res) => {
     });
   }
 });
+//route de demande traite pour le badge
+router.get('/get-demandes-traitees', (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Utilisateur non connecté" });
+  }
+
+  const query = `
+    SELECT COUNT(*) AS traiteesCount
+    FROM conges
+    WHERE traite = TRUE AND utilisateur_id = ?
+  `;
+
+  db.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error('Erreur récupération demandes traitées :', err);
+      return res.status(500).json({ error: "Erreur serveur" });
+    }
+
+    res.json({ traiteesCount: results[0].traiteesCount });
+  });
+});
 
 
-//bagde de notification de Notification
+// Badge de notification pour l'utilisateur connecté
 router.get('/get-notifications-count', (req, res) => {
-  const sql = "SELECT COUNT(*) AS notificationCount FROM notificationss WHERE est_lu = 0";
-  db.query(sql, (err, result) => {
+  const userId = req.session.userId; // récupère l'id de l'utilisateur depuis la session
+
+  if (!userId) {
+    return res.status(401).json({ error: 'Utilisateur non connecté' });
+  }
+
+  const sql = "SELECT COUNT(*) AS notificationCount FROM notificationss WHERE est_lu = 0 AND id_utilisateur = ?";
+  db.query(sql, [userId], (err, result) => {
     if (err) {
       console.error('Erreur MySQL :', err);
       return res.status(500).json({ error: 'Erreur serveur' });
@@ -489,5 +548,22 @@ router.get('/get-notifications-count', (req, res) => {
     res.json({ notificationCount: result[0].notificationCount });
   });
 });
+
+
+//mise a jour traiter
+router.post('/reset-traite', (req, res) => {
+  const userId = req.session.userId;
+  if (!userId) return res.status(401).json({ success: false, message: 'Non autorisé' });
+
+  const sql = 'UPDATE conges SET traite = 0 WHERE traite = 1 AND utilisateur_id = ?';
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error('Erreur reset-traite :', err);
+      return res.status(500).json({ success: false, error: 'Erreur serveur' });
+    }
+    res.json({ success: true, affectedRows: results.affectedRows });
+  });
+});
+
 
 module.exports = router;

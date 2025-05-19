@@ -7,30 +7,159 @@
   </div>
   <ul class="nav-links">
     <li><a href="/navigationuser/tableaubord"><i class='bx bx-home'></i><span>Tableau de bord</span></a></li>
-    <li><a href="/gestiondemande"><i class='bx bx-list-ul'></i><span>Gestion de demande</span></a></li>
+
+    <!-- Gestion de demande avec badge -->
+<li>
+  <a href="/gestiondemande" class="has-badge" id="gestiondemande-link">
+    <div class="icon-wrapper">
+      <i class='bx bx-list-ul'></i>
+      <span class="sidebar-badge" id="sidebarTraiteeBadge">0</span>
+    </div>
+    <span>Gestion de demande</span>
+  </a>
+</li>
+
+
     <li><a href="/navigationuser/calendrierconge"><i class='bx bx-calendar'></i><span>Calendrier</span></a></li>
-    <li>
-      <a href="/navigationuser/notificationuser" style="position: relative;">
-        <i class='bx bx-bell'></i>
-        <span>Notifications</span>
-        <span id="notification-badge" style="
-          display:none;
-          position: absolute;
-          top: 0;
-          right: 0;
-          background-color: #e74c3c;
-          color: white;
-          border-radius: 50%;
-          padding: 2px 7px;
-          font-size: 12px;
-          font-weight: bold;
-          ">
-          0
-        </span>
-      </a>
-    </li>
-    
+
+<!-- Notification avec badge -->
+<li>
+  <a href="/navigationuser/notificationuser" class="has-badge">
+    <div class="icon-wrapper">
+      <i class='bx bx-bell'></i>
+      <span id="notification-badge" class="sidebar-badge sidebar-badge-orange">0</span>
+    </div>
+    <span>Notifications</span>
+  </a>
+</li>
+
+
     <li><a href="/profil/pro"><i class='bx bx-user'></i><span>Profil</span></a></li>
     <li><a href="/deconnexion"><i class='bx bx-log-out'></i><span>Déconnexion</span></a></li>
   </ul>
 </div>
+
+<style>
+.icon-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+}
+
+.sidebar-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ff9800;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 2px 6px;
+  display: none;
+  animation: pulse 1.5s ease-in-out infinite;
+  z-index: 10;
+}
+
+.sidebar-badge-orange {
+  background-color: #ff9800;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
+
+</style>
+<script>
+function updateSidebarTraiteeBadge(count) {
+  const badge = document.getElementById('sidebarTraiteeBadge');
+  if (!badge) return;
+
+  if (count > 0) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function fetchTraiteeDemandesCount() {
+  fetch('/navigationuser/get-demandes-traitees')
+    .then(res => res.json())
+    .then(data => {
+      if (data.traiteesCount !== undefined) {
+        updateSidebarTraiteeBadge(data.traiteesCount);
+      }
+    })
+    .catch(err => console.error('Erreur fetch badge :', err));
+}
+
+function updateNotificationBadge(count) {
+  const badge = document.getElementById('notification-badge');
+  if (!badge) return;
+
+  if (count > 0) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function fetchNotificationCount() {
+  fetch('/navigationuser/get-notifications-count')
+    .then(res => res.json())
+    .then(data => {
+      if (data.notificationCount !== undefined) {
+        updateNotificationBadge(data.notificationCount);
+      }
+    })
+    .catch(err => console.error('Erreur fetch notification badge :', err));
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetchTraiteeDemandesCount();
+  setInterval(fetchTraiteeDemandesCount, 1000); // mise à jour toutes les 5s
+  fetchNotificationCount();
+  setInterval(fetchNotificationCount, 1000); // Mise à jour toutes les 5s
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Quand on clique sur le lien vers /gestiondemande
+  const gestionDemandeLink = document.getElementById('gestiondemande-link');
+  if (gestionDemandeLink) {
+    gestionDemandeLink.addEventListener('click', () => {
+      sessionStorage.setItem('shouldResetTraite', 'true');
+    });
+  }
+
+  // Vérifier si on est sur /gestiondemande et si reset doit être déclenché
+  if (window.location.pathname === '/gestiondemande') {
+    const shouldReset = sessionStorage.getItem('shouldResetTraite') === 'true';
+
+    if (shouldReset) {
+      // ✅ Attendre 2 secondes avant d’exécuter le reset
+      setTimeout(() => {
+        fetch('/navigationuser/reset-traite', { method: 'POST' })
+          .then(res => {
+            if (!res.ok) throw new Error('Échec du reset');
+            return res.json();
+          })
+          .then(data => {
+            console.log('Colonne "traite" mise à jour avec succès');
+            if (typeof fetchTraiteeDemandesCount === 'function') fetchTraiteeDemandesCount();
+            if (typeof reloadDemandes === 'function') reloadDemandes();
+          })
+          .catch(err => console.error('Erreur lors du reset :', err))
+          .finally(() => {
+            sessionStorage.removeItem('shouldResetTraite');
+          });
+      }, 6000); // ⏱️ Délai de 2 secondes ici
+    }
+  }
+});
+
+</script>
+
